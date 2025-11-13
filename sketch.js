@@ -13,7 +13,7 @@ function setup() {
 
   // Reset button
   resetButton = createButton("🔄 Reset");
-  resetButton.position(1000, 200);
+  resetButton.position(1100, 200);
   resetButton.style('font-size', '24px');
   resetButton.mousePressed(resetShapes);
 
