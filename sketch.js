@@ -1,19 +1,16 @@
 let shapes = [];
-let draggedShape = null;
-let offsetX, offsetY;
 let buildArea = { x: 50, y: 50, w: 800, h: 100 };
 let resetButton;
 
 function setup() {
   createCanvas(1600, 1400);
   textAlign(CENTER, CENTER);
-  textSize(20);
   rectMode(CORNER);
   noStroke();
 
   // Reset button
   resetButton = createButton("🔄 Reset");
-  resetButton.position(1100, 200);
+  resetButton.position(900, 80);
   resetButton.style('font-size', '24px');
   resetButton.mousePressed(resetShapes);
 
@@ -22,12 +19,26 @@ function setup() {
 }
 
 function addShapes() {
-  // Helper to add one shape
   function addShape(x, y, w, h, color, label) {
-    shapes.push({ x, y, w, h, color, label, inBox: false, homeX: x, homeY: y });
+    shapes.push({
+      x,
+      y,
+      w,
+      h,
+      color,
+      label,
+      inBox: false,
+      homeX: x,
+      homeY: y,
+      targetX: x,
+      targetY: y,
+      scale: 1,
+      targetScale: 1,
+      originalColor: color,
+    });
   }
 
-  // Example subset (add your full list back)
+  // 🔤 Sample letters (add your full set here)
   addShape(40, 300, 40, 40, 'lightyellow', 'a');
   addShape(90, 300, 40, 40, 'white', 'b');
   addShape(140, 300, 40, 40, 'white', 'c');
@@ -210,114 +221,131 @@ addShape(115, 1100, 60, 40, 'white', 'kn-');
 addShape(185, 1100, 60, 40, 'white', '-mb');
 addShape(255, 1100, 60, 40, 'white', '-mn');
 addShape(325, 1100, 60, 40, 'white', 'wr-');
-  
 }
 
 function draw() {
   background(240);
 
-  // Draw build area box
+  // Draw white build area
   stroke(180);
-  noFill();
+  fill(255);
   rect(buildArea.x, buildArea.y, buildArea.w, buildArea.h, 15);
-  noStroke();
-  fill(0);
-  textSize(24);
-  text("🧱 Drag letters here to build a word", buildArea.x + buildArea.w / 2, buildArea.y + buildArea.h / 2);
 
-  // Draw shapes
-  textSize(20);
-  textStyle(NORMAL);
-  for (let s of shapes) {
-    fill(s.color);
-    stroke(200);
-    rect(s.x, s.y, s.w, s.h, 10);
+  let inBoxShapes = shapes.filter((s) => s.inBox);
+
+  // Show instruction text only if box is empty
+  if (inBoxShapes.length === 0) {
     noStroke();
     fill(0);
-    text(s.label, s.x + s.w / 2, s.y + s.h / 2);
+    textSize(24);
+    textAlign(CENTER, CENTER);
+    text("🧱 Click letters to build a word", buildArea.x + buildArea.w / 2, buildArea.y + buildArea.h / 2);
   }
 
-  // Arrange shapes in box if needed
+  // Animate position and scale smoothly
+  for (let s of shapes) {
+    s.x = lerp(s.x, s.targetX, 0.15);
+    s.y = lerp(s.y, s.targetY, 0.15);
+    s.scale = lerp(s.scale, s.targetScale, 0.15);
+  }
+
+  // Draw shapes
+  for (let s of shapes) {
+    push();
+    translate(s.x + s.w / 2, s.y + s.h / 2);
+    scale(s.scale);
+    fill(s.color);
+    stroke(200);
+    rect(-s.w / 2, -s.h / 2, s.w, s.h, 10);
+    noStroke();
+    fill(0);
+    textSize(s.inBox ? 48 : 16); // Large in box, small at bottom
+    text(s.label, 0, 0);
+    pop();
+  }
+
   arrangeShapesInBox();
 
-  // Show current word
+  // Show the built word below the box
   fill(0);
   textSize(36);
   textStyle(BOLD);
+  textAlign(CENTER, CENTER);
   text("Word: " + getCurrentWord(), buildArea.x + buildArea.w / 2, buildArea.y + buildArea.h + 50);
 }
 
+// Toggle shapes when clicked
 function mousePressed() {
   for (let s of shapes) {
-    if (mouseX > s.x && mouseX < s.x + s.w && mouseY > s.y && mouseY < s.y + s.h) {
-      draggedShape = s;
-      offsetX = mouseX - s.x;
-      offsetY = mouseY - s.y;
+    if (
+      mouseX > s.x &&
+      mouseX < s.x + s.w &&
+      mouseY > s.y &&
+      mouseY < s.y + s.h
+    ) {
+      s.inBox = !s.inBox;
+
+      if (s.inBox) {
+        s.color = 'lightyellow';
+        s.targetScale = 1.5;
+      } else {
+        s.color = s.originalColor;
+        s.targetScale = 1;
+      }
+
+      arrangeShapesInBox();
       break;
     }
   }
 }
 
-function mouseDragged() {
-  if (draggedShape) {
-    draggedShape.x = mouseX - offsetX;
-    draggedShape.y = mouseY - offsetY;
-  }
-}
-
-function mouseReleased() {
-  if (draggedShape) {
-    if (isOverBuildArea(draggedShape)) {
-      draggedShape.inBox = true;
-      draggedShape.color = 'lightyellow';
-    } else {
-      draggedShape.inBox = false;
-      draggedShape.color = 'white';
-    }
-  }
-  draggedShape = null;
-}
-
-function isOverBuildArea(s) {
-  return (
-    s.x + s.w / 2 > buildArea.x &&
-    s.x + s.w / 2 < buildArea.x + buildArea.w &&
-    s.y + s.h / 2 > buildArea.y &&
-    s.y + s.h / 2 < buildArea.y + buildArea.h
-  );
-}
-
+// 🔹 Center and space the letters evenly inside the build box
 function arrangeShapesInBox() {
-  let inBoxShapes = shapes.filter(s => s.inBox);
-  if (inBoxShapes.length === 0) return;
+  let inBoxShapes = shapes.filter((s) => s.inBox);
+  if (inBoxShapes.length === 0) {
+    // Send all letters home if nothing in box
+    for (let s of shapes) {
+      s.targetX = s.homeX;
+      s.targetY = s.homeY;
+    }
+    return;
+  }
 
-  inBoxShapes.sort((a, b) => a.x - b.x);
+  inBoxShapes.sort((a, b) => a.label.localeCompare(b.label)); // optional: sort alphabetically or by click order
 
-  const spacing = 10;
-  const totalWidth =
-    inBoxShapes.reduce((sum, s) => sum + s.w, 0) + spacing * (inBoxShapes.length - 1);
+  const spacing = 20;
+  const letterWidth = 90; // width per letter when enlarged
+  const totalWidth = inBoxShapes.length * letterWidth + (inBoxShapes.length - 1) * spacing;
   const startX = buildArea.x + (buildArea.w - totalWidth) / 2;
   const centerY = buildArea.y + buildArea.h / 2;
 
   let currentX = startX;
   for (let s of inBoxShapes) {
-    s.x = lerp(s.x, currentX, 0.2);
-    s.y = lerp(s.y, centerY - s.h / 2, 0.2);
-    currentX += s.w + spacing;
+    s.targetX = currentX;
+    s.targetY = centerY - (s.h * 1.5) / 2;
+    currentX += letterWidth + spacing;
+  }
+
+  // Return all others to home
+  for (let s of shapes) {
+    if (!s.inBox) {
+      s.targetX = s.homeX;
+      s.targetY = s.homeY;
+    }
   }
 }
 
 function getCurrentWord() {
-  let inBoxShapes = shapes.filter(s => s.inBox);
-  inBoxShapes.sort((a, b) => a.x - b.x);
-  return inBoxShapes.map(s => s.label).join('');
+  let inBoxShapes = shapes.filter((s) => s.inBox);
+  return inBoxShapes.map((s) => s.label).join('');
 }
 
 function resetShapes() {
   for (let s of shapes) {
     s.inBox = false;
-    s.color = 'white';
-    s.x = s.homeX;
-    s.y = s.homeY;
+    s.color = s.originalColor;
+    s.targetX = s.homeX;
+    s.targetY = s.homeY;
+    s.targetScale = 1;
   }
 }
