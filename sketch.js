@@ -19,6 +19,9 @@ const DESIGN_H = 1400;
 const CATEGORY_COUNT = 18;
 const SAFE_MARGIN = 50;   // about 1/2 inch on most screens
 
+// Shared offset between build area and buttons (used in positioning + layout)
+const BUTTON_OFFSET = 18;
+
 // NOTE: disabled font loading for GitHub Pages (CORS-safe)
 function preload() {
   // intentionally left blank (avoid loadFont from remote CDN)
@@ -137,7 +140,8 @@ function positionButtons() {
 
   // startX computed relative to page coordinates (canvas at top-left of page)
   const startX = areaX + (areaW - totalW) / 2;
-  const y = areaY + areaH + 18;   // 18 px below the white box
+  // place buttons BUTTON_OFFSET px below the build area
+  const y = areaY + areaH + BUTTON_OFFSET;
 
   // position (p5 DOM positions are page coordinates; canvas at top-left so these align)
   try {
@@ -331,29 +335,30 @@ function layoutGroups() {
   const blockGap = max(40 * scaleFactor, 24);
   const rowGap = max(30 * scaleFactor, 18);
 
- const BUTTON_OFFSET = 18;
+  // safe fallback if DOM isn't measured yet
+  const fallbackButtonHeight = 40;
 
-// safe fallback if DOM isn't measured yet
-const fallbackButtonHeight = 40;
+  // try to read the actual, real button height
+  let realButtonHeight = fallbackButtonHeight;
+  try {
+    if (resetButton && resetButton.elt && resetButton.elt.offsetHeight) {
+      realButtonHeight = resetButton.elt.offsetHeight;
+    }
+  } catch(e) {}
 
-// try to read the actual, real button height
-let realButtonHeight = fallbackButtonHeight;
-try {
-  if (resetButton && resetButton.elt && resetButton.elt.offsetHeight) {
-    realButtonHeight = resetButton.elt.offsetHeight;
-  }
-} catch(e) {}
+  // extra space user requested
+  const BIG_GAP = 80;   // adjust this number to taste
 
-// extra space user requested
-const BIG_GAP = 80;   // adjust this number to taste
+  // FINAL tile starting Y position:
+  let y =
+    buildArea.y +
+    buildArea.h +
+    BUTTON_OFFSET +
+    realButtonHeight +
+    BIG_GAP;
 
-// FINAL tile starting Y position:
-let y =
-  buildArea.y +
-  buildArea.h +
-  BUTTON_OFFSET +
-  realButtonHeight +
-  BIG_GAP;
+  // track current row width for wrapping
+  let currentRowWidth = 0;
 
   // We'll build a new list of baseShapes positions based on groups (wrapping blocks)
   for (let gi = 0; gi < groups.length; gi++) {
