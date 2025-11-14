@@ -82,8 +82,8 @@ function windowResized() {
 }
 
 function positionResetButton() {
-  const btnX = buildArea.x;                        // left edge of the white box
-  const btnY = buildArea.y + buildArea.h + 20;     // directly under the box
+  const btnX = buildArea.x + SAFE_MARGIN;
+  const btnY = buildArea.y + buildArea.h + 20 + SAFE_MARGIN;
 
   resetButton.position(btnX, btnY);
 }
