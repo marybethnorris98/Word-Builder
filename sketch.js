@@ -8,7 +8,7 @@ let scaleFactor = 1;
 
 // --- DESIGN / layout settings
 const DESIGN_W = 1600;
-const DESIGN_H = 1400;
+const DESIGN_H = 2000;
 const CATEGORY_COUNT = 18;
 
 function setup() {
