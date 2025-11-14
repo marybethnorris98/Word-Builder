@@ -1,31 +1,19 @@
-<!DOCTYPE html>
-<html lang="en">
+<!doctype html>
+<html>
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title> Word Builder</title>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.6.0/p5.min.js"></script>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Word Builder</title>
   <style>
-    body {
-      margin: 0;
-      background-color: #F8FCE9;
-      font-family: 'Calibri', sans-serif;
-      text-align: center;
-    }
-    h1 {
-      margin: 20px;
-      color: #333;
-    }
-    canvas {
-      border-radius: 12px;
-      box-shadow: 0 0 20px rgba(0,0,0,0.1);
-      margin-bottom: 40px;
-    }
+    html,body { height:100%; margin:0; background:#FAF8F0; }
+    /* make the canvas fill the page */
+    canvas { display:block; }
   </style>
 </head>
 <body>
-  <h1>🧱 Word Builder</h1>
+  <!-- load p5 first -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.6.0/p5.min.js" integrity="" crossorigin="anonymous"></script>
+  <!-- then your sketch -->
   <script src="sketch.js"></script>
 </body>
 </html>
-<script src="
