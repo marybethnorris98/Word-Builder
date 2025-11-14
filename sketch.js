@@ -361,12 +361,6 @@ function draw() {
   // arrange in box if needed
   arrangeShapesInBox();
 
-  // show current word under buildArea
-  fill(40);
-  textSize(min(32 * scaleFactor, 36));
-  text("Word: " + getCurrentWord(), width / 2, buildArea.y + buildArea.h + 42 * scaleFactor);
-}
-
 // --- click handling (topmost-first)
 function mousePressed() {
   for (let i = shapes.length - 1; i >= 0; i--) {
