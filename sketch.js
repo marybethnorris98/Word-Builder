@@ -364,19 +364,23 @@ function mousePressed() {
     if (mouseX > s.x && mouseX < s.x + sw && mouseY > s.y && mouseY < s.y + sh) {
       if (s.isBase) {
         const clone = {
-          label: s.label,
-          w: s.w, h: s.h,
-          x: s.homeX, y: s.homeY,
-          homeX: s.homeX, homeY: s.homeY,
-          targetX: s.homeX, targetY: s.homeY,
-          color: "lightyellow",
-          originalColor: s.originalColor,
-          isBase: false,
-          inBox: true,
-          scale: 1,
-          targetScale: 1.5,
-          clickIndex: nextClickIndex++
-        };
+  label: s.label,
+  w: s.w, h: s.h,
+  x: s.homeX, y: s.homeY,
+  homeX: s.homeX, homeY: s.homeY,
+  targetX: s.homeX, targetY: s.homeY,
+  
+  // FIXED: use correct category color
+  color: s.originalColor,
+  originalColor: s.originalColor,
+
+  isBase: false,
+  inBox: true,
+
+  scale: 1,
+  targetScale: 1.5,
+  clickIndex: nextClickIndex++
+};
         shapes.push(clone);
         arrangeShapesInBox();
         return;
