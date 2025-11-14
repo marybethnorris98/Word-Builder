@@ -419,12 +419,11 @@ function arrangeShapesInBox() {
     t.targetY = centerY - (t.h * t.targetScale) / 2;
 
     const base = baseShapes.find(b => b.label === t.label);
-    if (base && (base.originalColor === "lightyellow" || base.originalColor === "lightgreen")) {
-      t.color = base.originalColor;
-    } else {
-      t.color = "lightyellow";
-    }
-
+    if (base) {
+  t.color = base.originalColor;   // keep the real category color
+} else {
+  t.color = 'white';
+}
     t.targetScale = min(2.0, (buildArea.h / t.h) * 0.9);
 
     x += letterW + spacing;
