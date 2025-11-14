@@ -261,68 +261,113 @@ function categorizeBaseShapes() {
 // --- layout: center each group in its own block; groups stack vertically with spacing
 function layoutGroups() {
   calculateScale();
+
+  const rowPlan = [
+    [0, 1],             
+    [2, 3, 4],          
+    [7, 8],             
+    [12, 13],           
+    [5, 6, 9, 10, 11, 14, 15, 16, 17]
+  ];
+
   const top = buildArea.y + buildArea.h + 30 * scaleFactor;
-  const groupGap = max(18 * scaleFactor, height * 0.03);
+  const rowGap = max(35 * scaleFactor, height * 0.03);
+  const blockGap = 70 * scaleFactor;
+
   const availableW = width * 0.9;
   const leftMargin = (width - availableW) / 2;
 
-  // tile sizing responsive
   const baseTileW = constrain(floor(70 * scaleFactor), 40, 140);
   const baseTileH = constrain(floor(44 * scaleFactor), 28, 80);
   const tileGap = max(8 * scaleFactor, 6);
 
   let y = top;
 
-  for (let gi = 0; gi < groups.length; gi++) {
-    const items = groups[gi];
-    if (items.length === 0) {
-      y += groupGap;
-      continue;
+  for (let row of rowPlan) {
+    let blocks = [];
+    let totalRowWidth = 0;
+
+    // --- First pass: compute each block width ---
+    for (let gi of row) {
+      const items = groups[gi] || [];
+
+      const maxCols = max(1, floor((availableW * 0.9 + tileGap) / (baseTileW + tileGap)));
+      const cols = min(items.length, maxCols);
+      const rowsNeeded = items.length ? ceil(items.length / cols) : 0;
+
+      const width = cols > 0 ? cols * baseTileW + (cols - 1) * tileGap : 0;
+      const height = rowsNeeded * (baseTileH + tileGap) - tileGap;
+
+      blocks.push({ gi, items, width, height, rows: rowsNeeded });
+      totalRowWidth += width;
     }
 
-    // compute max columns that fit comfortably in availableW
-    const maxCols = max(1, floor((availableW + tileGap) / (baseTileW + tileGap)));
-    // choose columns as min(items.length, maxCols)
-    const cols = min(items.length, maxCols);
-    const rowsNeeded = ceil(items.length / cols);
+    totalRowWidth += blockGap * (row.length - 1);
 
-    // place items row by row and center each row
-    for (let r = 0; r < rowsNeeded; r++) {
-      const startIndex = r * cols;
-      const rowCount = min(cols, items.length - startIndex);
-      const rowWidth = rowCount * baseTileW + (rowCount - 1) * tileGap;
-      const rowStartX = leftMargin + (availableW - rowWidth) / 2;
+    let startX = leftMargin + (availableW - totalRowWidth) / 2;
+    let blockX = startX;
 
-      for (let c = 0; c < rowCount; c++) {
-        const idx = startIndex + c;
-        const s = items[idx];
-        if (!s) continue;
-        s.w = baseTileW;
-        s.h = baseTileH;
-        s.homeX = rowStartX + c * (baseTileW + tileGap);
-        s.homeY = y + r * (baseTileH + tileGap);
-        s.x = s.homeX;
-        s.y = s.homeY;
-        s.targetX = s.x;
-        s.targetY = s.y;
-        s.scale = 1;
-        s.targetScale = 1;
-        s.color = s.originalColor;
-        s.isBase = true;
-        s.inBox = false;
-        s.clickIndex = null;
+    // --- Second pass: draw blocks + place tiles ---
+    for (let block of blocks) {
+      const { items, width, height, rows } = block;
+
+      // --- Draw border around this block ---
+      if (items.length > 0) {
+        stroke(200);
+        strokeWeight(2);
+        noFill();
+        rect(
+          blockX - 10 * scaleFactor,
+          y - 10 * scaleFactor,
+          width + 20 * scaleFactor,
+          height + 20 * scaleFactor,
+          10 * scaleFactor
+        );
       }
+
+      // --- Place tiles inside block ---
+      if (items.length > 0) {
+        const maxCols = max(1, floor((availableW * 0.9 + tileGap) / (baseTileW + tileGap)));
+        const cols = min(items.length, maxCols);
+        const rowsNeeded = ceil(items.length / cols);
+
+        let idx = 0;
+        for (let r = 0; r < rowsNeeded; r++) {
+          const countInRow = min(cols, items.length - r * cols);
+          const rowWidth = countInRow * baseTileW + (countInRow - 1) * tileGap;
+          const rowStartX = blockX + (width - rowWidth) / 2;
+
+          for (let c = 0; c < countInRow; c++) {
+            const s = items[idx++];
+
+            s.w = baseTileW;
+            s.h = baseTileH;
+            s.homeX = rowStartX + c * (baseTileW + tileGap);
+            s.homeY = y + r * (baseTileH + tileGap);
+            s.x = s.homeX;
+            s.y = s.homeY;
+            s.targetX = s.homeX;
+            s.targetY = s.homeY;
+            s.scale = 1;
+            s.targetScale = 1;
+            s.color = s.originalColor;
+            s.inBox = false;
+            s.isBase = true;
+          }
+        }
+      }
+
+      blockX += width + blockGap;
     }
 
-    // advance y by rows * height + groupGap
-    y += rowsNeeded * (baseTileH + tileGap) + groupGap;
+    const tallestRows = max(...blocks.map(b => b.rows));
+    const tallestHeight = tallestRows * (baseTileH + tileGap);
+    y += tallestHeight + rowGap;
   }
 
-  // recreate runtime shapes starting with baseShapes in same order for hit-testing
   shapes = baseShapes.map(b => ({ ...b }));
 }
 
-// --- draw loop
 function draw() {
   background(245);
 
