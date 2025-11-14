@@ -100,7 +100,7 @@ function styleAppButton(btn) {
   btn.style("cursor", "pointer");
   btn.style("border", "none");
   // ensure pointer events
-  btn.elt.style.pointerEvents = "auto";
+  if (btn.elt) btn.elt.style.pointerEvents = "auto";
 }
 
 // position three buttons centered under the build area
@@ -130,6 +130,7 @@ function positionButtons() {
   checkButton.position(startX + wReset + gap, y);
   defineButton.position(startX + wReset + wCheck + gap * 2, y);
 }
+
 
 // scale calculation
 function calculateScale() {
