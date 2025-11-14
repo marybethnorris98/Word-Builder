@@ -219,12 +219,21 @@ function layoutGroups() {
   calculateScale();
 
   const rowPlan = [
-    [0, 1],
-    [2, 3, 4],
-    [7, 8],
-    [12, 13],
-    [5, 6, 9, 10, 11, 14, 15, 16, 17]
-  ];
+  [0],          // Single letters (a-z)
+  [1],          // Digraphs
+
+  [2, 3, 4],    // L-blends, R-blends, S-blends
+
+  [7],          // Vowel teams 1
+  [8],          // Vowel teams 2
+
+  [12],         // Prefixes
+  [13],         // Suffixes
+
+  // Everything else split into two rows
+  [5, 6, 9, 10],  
+  [11, 14, 15, 16, 17]
+];
 
   const top = buildArea.y + buildArea.h + 30 * scaleFactor;
   const rowGap = max(35 * scaleFactor, height * 0.03);
