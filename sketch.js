@@ -218,7 +218,8 @@ function layoutGroups() {
 
   // Everything else split into two rows
   [5, 6, 9, 10],  
-  [11, 14, 15, 16, 17]
+  [11, 14, 15]
+  [16, 17]
 ];
 
   const top = buildArea.y + buildArea.h + 30 * scaleFactor;
