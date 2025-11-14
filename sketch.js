@@ -321,7 +321,7 @@ function draw() {
 
   // modern build area
   noStroke();
-  fill(...buildAreaColor);
+  fill(buildAreaColor);
   rect(buildArea.x, buildArea.y, buildArea.w, buildArea.h, 20 * scaleFactor);
 
   // hint text when empty
@@ -346,7 +346,7 @@ function draw() {
     // draw subtle shadow (under tile)
     push();
     noStroke();
-    fill(...tileShadowColor);
+    fill(tileShadowColor);
     rect(s.x + tileShadowOffset, s.y + tileShadowOffset, s.w * s.scale, s.h * s.scale, tileCorner * scaleFactor);
     pop();
 
