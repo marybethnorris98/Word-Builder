@@ -5,6 +5,20 @@ let nextClickIndex = 0;
 let resetButton;
 let buildArea;
 let scaleFactor = 1;
+let mainFont;
+let canvasEl; // p5 canvas element so we can position it with SAFE_MARGIN
+
+// THEME / UI
+const backgroundColor = [250, 248, 240];    // warm off-white (r,g,b)
+const buildAreaColor = [255, 255, 255, 230]; // slightly translucent white (r,g,b,alpha)
+const tileShadowColor = [0, 0, 0, 22];      // subtle shadow (r,g,b,alpha)
+const tileCorner = 12;                      // rounded corner radius
+const tileShadowOffset = 4;                 // px shadow offset for tiles
+
+function preload() {
+  // Nunito regular — reliable file from Google Fonts CDN
+  mainFont = loadFont("https://fonts.gstatic.com/s/nunito/v25/XRXV3I6Li01BKofINeaB.ttf");
+}
 
 // design reference
 const DESIGN_W = 1600;
@@ -12,28 +26,42 @@ const DESIGN_H = 1400;
 const CATEGORY_COUNT = 18;
 const SAFE_MARGIN = 50;   // about 1/2 inch on most screens
 
-
 function setup() {
-  createCanvas(windowWidth - SAFE_MARGIN * 2, windowHeight - SAFE_MARGIN * 2);
+  // create canvas sized for SAFE_MARGIN and position it inset from page edges
+  canvasEl = createCanvas(windowWidth - SAFE_MARGIN * 2, windowHeight - SAFE_MARGIN * 2);
+  canvasEl.position(SAFE_MARGIN, SAFE_MARGIN);
+
+  // typography + drawing defaults
+  textFont(mainFont);
   textAlign(CENTER, CENTER);
   rectMode(CORNER);
   noStroke();
 
+  // initial setup
   createBaseShapesFromFullList();
   categorizeBaseShapes();
   calculateScale();
 
   // initial buildArea sizing (will be recalculated in layoutGroups too)
-buildArea = {
-  x: SAFE_MARGIN,
-  y: SAFE_MARGIN,
-  w: width - SAFE_MARGIN * 2,
-  h: constrain(120 * scaleFactor, 80, 200)
-};
-  
-  // reset button
+  buildArea = {
+    x: 0, // use canvas-local coords (canvas itself is inset by SAFE_MARGIN)
+    y: 0,
+    w: width,
+    h: constrain(120 * scaleFactor, 80, 200)
+  };
+  // then we'll inset the buildArea by SAFE_MARGIN inside the canvas
+  buildArea.x = SAFE_MARGIN;
+  buildArea.y = SAFE_MARGIN;
+  buildArea.w = width - SAFE_MARGIN * 2;
+
+  // reset button (DOM) styled modernly
   resetButton = createButton("🔄 Reset");
+  resetButton.style("font-family", "Nunito, system-ui, sans-serif");
   resetButton.style("font-size", "18px");
+  resetButton.style("padding", "10px 14px");
+  resetButton.style("border-radius", "12px");
+  resetButton.style("background", "white");
+  resetButton.style("box-shadow", "0 6px 12px rgba(0,0,0,0.06)");
   resetButton.mousePressed(resetShapes);
 
   layoutGroups();
@@ -45,11 +73,18 @@ buildArea = {
 }
 
 function windowResized() {
-  resizeCanvas(windowWidth, windowHeight);
+  // resize the canvas while keeping an inset SAFE_MARGIN
+  resizeCanvas(windowWidth - SAFE_MARGIN * 2, windowHeight - SAFE_MARGIN * 2);
+  // re-position the canvas in case the page layout changed
+  canvasEl.position(SAFE_MARGIN, SAFE_MARGIN);
+
   calculateScale();
-  buildArea.w = width - 0.05 * width * 2;
-  buildArea.y = 0.03 * height;
+
+  // rebuild buildArea using new width/height
+  buildArea.w = width - SAFE_MARGIN * 2;
+  buildArea.y = SAFE_MARGIN;
   buildArea.h = constrain(120 * scaleFactor, 80, 200);
+
   categorizeBaseShapes(); // re-calc colors/groups (safe)
   layoutGroups();
   shapes = baseShapes.map(b => ({ ...b }));
@@ -57,15 +92,18 @@ function windowResized() {
 }
 
 function positionResetButton() {
-  // keep the reset button visible and not off-screen
-  const btnX = width * 0.86;
+  // keep the reset button visible and not off-screen (page coords)
+  const btnX = width * 0.86;            // canvas-local
   const desiredY = buildArea.y + buildArea.h + 12;
   const btnY = min(desiredY, height - 40);
-  resetButton.position(btnX, btnY);
+
+  // convert canvas-local to page coordinates by adding SAFE_MARGIN
+  resetButton.position(btnX + SAFE_MARGIN, btnY + SAFE_MARGIN);
 }
 
 function calculateScale() {
-  scaleFactor = min(windowWidth / DESIGN_W, windowHeight / DESIGN_H);
+  // scale relative to canvas size (not window)
+  scaleFactor = min(width / DESIGN_W, height / DESIGN_H);
 }
 
 // -----------------------------
@@ -136,8 +174,8 @@ function createBaseShapesFromFullList() {
     x: 0, y: 0,
     homeX: 0, homeY: 0,
     targetX: 0, targetY: 0,
-    color: "white",
-    originalColor: "white",
+    color: "#ffffff",
+    originalColor: "#ffffff",
     isBase: true,
     inBox: false,
     scale: 1,
@@ -208,13 +246,17 @@ function categorizeBaseShapes() {
     groups[g].push(s);
   }
 
-  // colors by category
+  // colors by category (use pastel hex values)
+  const COLOR_YELLOW = "#FFF7C8";
+  const COLOR_GREEN  = "#E6F6DF";
+  const COLOR_WHITE  = "#FFFFFF";
+
   for (let s of baseShapes) {
     const g = s.groupIndex;
-    if (g === 0 && /^[aeiouy]$/.test(s.label)) s.originalColor = "lightyellow";
-    else if (g === 7 || g === 8 || g === 14) s.originalColor = "lightyellow"; // vowels, teams, magic-e
-    else if (g === 12 || g === 13) s.originalColor = "lightgreen"; // prefixes/suffixes
-    else s.originalColor = "white";
+    if (g === 0 && /^[aeiouy]$/.test(s.label)) s.originalColor = COLOR_YELLOW;
+    else if (g === 7 || g === 8 || g === 14) s.originalColor = COLOR_YELLOW; // vowel teams + magic-e
+    else if (g === 12 || g === 13) s.originalColor = COLOR_GREEN; // prefixes/suffixes
+    else s.originalColor = COLOR_WHITE;
     s.color = s.originalColor;
   }
 }
@@ -225,10 +267,10 @@ function categorizeBaseShapes() {
 function layoutGroups() {
   calculateScale();
 
- const leftMargin = SAFE_MARGIN;
-const rightMargin = SAFE_MARGIN;
-const maxRowWidth = width - SAFE_MARGIN * 2;
-  
+  const leftMargin = SAFE_MARGIN;
+  const rightMargin = SAFE_MARGIN;
+  const maxRowWidth = width - SAFE_MARGIN * 2;
+
   // tile/base sizes
   const baseTileW = constrain(floor(70 * scaleFactor), 36, 140);
   const baseTileH = constrain(floor(44 * scaleFactor), 24, 80);
@@ -239,9 +281,6 @@ const maxRowWidth = width - SAFE_MARGIN * 2;
   let y = buildArea.y + buildArea.h + 30 * scaleFactor;
   y = max(y, SAFE_MARGIN);  // ensure top row is not near bottom
   let currentRowWidth = 0;
-  if (y + baseTileH > height - SAFE_MARGIN) {
-  // either reduce tile size or stop placing more
-}
 
   // We'll build a new list of baseShapes positions based on groups (wrapping blocks)
   for (let gi = 0; gi < groups.length; gi++) {
@@ -293,43 +332,56 @@ const maxRowWidth = width - SAFE_MARGIN * 2;
 // Draw loop
 // -----------------------------
 function draw() {
-  background(245);
+  // soft background for whole canvas (use spread so alpha works if present)
+  background(...backgroundColor);
 
-  // draw build area
-  stroke(180);
-  fill(255);
-  rect(buildArea.x, buildArea.y, buildArea.w, buildArea.h, 12 * scaleFactor);
+  // modern build area
+  noStroke();
+  fill(...buildAreaColor);
+  rect(buildArea.x, buildArea.y, buildArea.w, buildArea.h, 20 * scaleFactor);
 
   // hint text when empty
   const inBox = shapes.filter(s => s.inBox);
   if (inBox.length === 0) {
     noStroke();
-    fill(40);
+    fill(70);
     textSize(min(24 * scaleFactor, 24));
     text("🧱 Click letters to build a word", buildArea.x + buildArea.w / 2, buildArea.y + buildArea.h / 2);
   }
 
-  // animate movement/scale
+  // animate movement/scale (unchanged)
   for (let s of shapes) {
     s.x = lerp(s.x, s.targetX, 0.15);
     s.y = lerp(s.y, s.targetY, 0.15);
     s.scale = lerp(s.scale, s.targetScale, 0.15);
   }
 
-  // draw shapes
+  // draw tiles (bases and clones)
   for (let s of shapes) {
-    fill(s.color || "white");
-    stroke(200);
-    rect(s.x, s.y, s.w * s.scale, s.h * s.scale, 8 * scaleFactor);
+
+    // draw subtle shadow (under tile)
+    push();
     noStroke();
-    fill(0);
+    fill(...tileShadowColor);
+    rect(s.x + tileShadowOffset, s.y + tileShadowOffset, s.w * s.scale, s.h * s.scale, tileCorner * scaleFactor);
+    pop();
+
+    // draw actual tile (use s.color which preserves your tile color rules)
+    push();
+    noStroke();
+    fill(s.color || "#ffffff");
+    rect(s.x, s.y, s.w * s.scale, s.h * s.scale, tileCorner * scaleFactor);
+
+    // tile text (dark gray)
+    noStroke();
+    fill(40);
     textSize(
-  s.inBox
-    ? s.h * s.scale * 0.82
-    : s.h * s.scale * 0.58
-);
-    // draw label
+      s.inBox
+        ? s.h * s.scale * 0.82
+        : s.h * s.scale * 0.58
+    );
     text(s.label, s.x + (s.w * s.scale) / 2, s.y + (s.h * s.scale) / 2);
+    pop();
   }
 
   arrangeShapesInBox();
@@ -344,7 +396,10 @@ function mousePressed() {
     const s = shapes[i];
     const sw = s.w * s.scale;
     const sh = s.h * s.scale;
-    if (mouseX > s.x && mouseX < s.x + sw && mouseY > s.y && mouseY < s.y + sh) {
+    // mouse coordinates are page-relative; we must offset by SAFE_MARGIN because canvas is positioned
+    const localMouseX = mouseX;
+    const localMouseY = mouseY;
+    if (localMouseX > s.x && localMouseX < s.x + sw && localMouseY > s.y && localMouseY < s.y + sh) {
       if (s.isBase) {
         // create a clone (keep original category color)
         const clone = {
@@ -415,7 +470,7 @@ function arrangeShapesInBox() {
     if (base) {
       t.color = base.originalColor;
     } else {
-      t.color = 'white';
+      t.color = '#ffffff';
     }
     // scale to fit box height (but keep within a cap)
     t.targetScale = min(2.0, (buildArea.h / t.h) * 0.9);
