@@ -61,7 +61,7 @@ function setup() {
   // shapes are copies of baseShapes (so runtime clones can be appended)
   shapes = baseShapes.map(b => ({ ...b }));
 
-  positionResetButton();
+  positionResetButton(); 
 }
 
 function windowResized() {
@@ -82,10 +82,9 @@ function windowResized() {
 }
 
 function positionResetButton() {
-  // position relative to canvas (no extra SAFE_MARGIN offset because we used full-window canvas)
-  const btnX = width * 0.86;
-  const desiredY = buildArea.y + buildArea.h + 12;
-  const btnY = min(desiredY, height - 40);
+  const btnX = buildArea.x;                        // left edge of the white box
+  const btnY = buildArea.y + buildArea.h + 20;     // directly under the box
+
   resetButton.position(btnX, btnY);
 }
 
