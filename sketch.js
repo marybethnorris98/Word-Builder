@@ -96,7 +96,7 @@ function styleAppButton(btn) {
   btn.style("box-shadow", "0 6px 12px rgba(0,0,0,0.06)");
   btn.style("cursor", "pointer");
 }
-
+}
 // position three buttons centered under the build area
 function positionButtons() {
   // buildArea coordinates are in canvas pixels
