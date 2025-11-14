@@ -65,6 +65,8 @@ function setup() {
 }
 
 function windowResized() {
+  if (!buildArea) return;
+  
   resizeCanvas(windowWidth, windowHeight);
   calculateScale();
 
