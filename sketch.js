@@ -331,8 +331,29 @@ function layoutGroups() {
   const blockGap = max(40 * scaleFactor, 24);
   const rowGap = max(30 * scaleFactor, 18);
 
-  let y = buildArea.y + buildArea.h + 120; 
-  let currentRowWidth = 0;
+ const BUTTON_OFFSET = 18;
+
+// safe fallback if DOM isn't measured yet
+const fallbackButtonHeight = 40;
+
+// try to read the actual, real button height
+let realButtonHeight = fallbackButtonHeight;
+try {
+  if (resetButton && resetButton.elt && resetButton.elt.offsetHeight) {
+    realButtonHeight = resetButton.elt.offsetHeight;
+  }
+} catch(e) {}
+
+// extra space user requested
+const BIG_GAP = 80;   // adjust this number to taste
+
+// FINAL tile starting Y position:
+let y =
+  buildArea.y +
+  buildArea.h +
+  BUTTON_OFFSET +
+  realButtonHeight +
+  BIG_GAP;
 
   // We'll build a new list of baseShapes positions based on groups (wrapping blocks)
   for (let gi = 0; gi < groups.length; gi++) {
