@@ -24,14 +24,13 @@ function setup() {
   calculateScale();
 
   // initial buildArea sizing (will be recalculated in layoutGroups too)
-  const margin = 0.05 * width;
-  buildArea = {
-    x: margin,
-    y: 0.03 * height,
-    w: width - margin * 2,
-    h: constrain(120 * scaleFactor, 80, 200)
-  };
-
+buildArea = {
+  x: SAFE_MARGIN,
+  y: SAFE_MARGIN,
+  w: width - SAFE_MARGIN * 2,
+  h: constrain(120 * scaleFactor, 80, 200)
+};
+  
   // reset button
   resetButton = createButton("🔄 Reset");
   resetButton.style("font-size", "18px");
@@ -238,7 +237,11 @@ const maxRowWidth = width - SAFE_MARGIN * 2;
   const rowGap = max(30 * scaleFactor, 18);
 
   let y = buildArea.y + buildArea.h + 30 * scaleFactor;
+  y = max(y, SAFE_MARGIN);  // ensure top row is not near bottom
   let currentRowWidth = 0;
+  if (y + baseTileH > height - SAFE_MARGIN) {
+  // either reduce tile size or stop placing more
+}
 
   // We'll build a new list of baseShapes positions based on groups (wrapping blocks)
   for (let gi = 0; gi < groups.length; gi++) {
