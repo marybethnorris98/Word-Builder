@@ -55,11 +55,6 @@ function calculateScale() {
     h: constrain(120 * scaleFactor, 80, 200)
   };
 }
-
-// -----------------------------------------
-// --- LIST + TILE CREATION ----------------
-// -----------------------------------------
-
 function createBaseShapesFromFullList() {
   const raw = [
     // single letters a–z
@@ -117,7 +112,6 @@ function createBaseShapesFromFullList() {
       uniq.push(t);
     }
   }
-
   baseShapes = uniq.map(lbl => ({
     label: lbl,
     w: 70, h: 44,
@@ -134,10 +128,6 @@ function createBaseShapesFromFullList() {
     groupIndex: null
   }));
 }
-
-// -----------------------------------------
-// --- CATEGORIZER -------------------------
-// -----------------------------------------
 function categorizeBaseShapes() {
   const singleLetters = new Set("abcdefghijklmnopqrstuvwxyz".split(""));
   const digraphs = new Set(["ch","sh","th","wh","qu","ph","tch","dge","ck","ff","ll","ss","zz","gn","kn","wr","mb","mn"]);
@@ -211,10 +201,6 @@ function categorizeBaseShapes() {
     s.color = s.originalColor;
   }
 }
-
-// -----------------------------------------
-// --- NEW MULTI-BLOCK ROW LAYOUT + BORDERS
-// -----------------------------------------
 function layoutGroups() {
   calculateScale();
 
@@ -331,11 +317,6 @@ function layoutGroups() {
 
   shapes = baseShapes.map(b => ({ ...b }));
 }
-
-// -----------------------------------------
-// --- DRAW LOOP ---------------------------
-// -----------------------------------------
-
 function draw() {
   background(245);
 
@@ -406,11 +387,6 @@ function mousePressed() {
     }
   }
 }
-
-// -----------------------------------------
-// --- WORD BOX LAYOUT ---------------------
-// -----------------------------------------
-
 function arrangeShapesInBox() {
   const inBox = shapes
     .filter(s => s.inBox)
@@ -462,11 +438,6 @@ function arrangeShapesInBox() {
     }
   }
 }
-
-// -----------------------------------------
-// --- UTILITIES ---------------------------
-// -----------------------------------------
-
 function getCurrentWord() {
   return shapes
     .filter(s => s.inBox)
