@@ -267,81 +267,39 @@ function categorizeBaseShapes() {
 // Layout: BLOCK WRAP
 // -----------------------------
 function layoutGroups() {
-  calculateScale();
+  const startY = buildArea.y + buildArea.h + 80;   // gap below build area
+  const rowGap = 30;     // gap between wrapped rows
+  const colGap = 20;     // gap between shapes in same row
+  const maxW = DESIGN_W - 40; // right boundary for wrapping
 
-  const leftMargin = SAFE_MARGIN;
-  const maxRowWidth = width - SAFE_MARGIN * 2;
+  let y = startY;
 
-  const baseTileW = constrain(floor(70 * scaleFactor), 36, 140);
-  const baseTileH = constrain(floor(44 * scaleFactor), 24, 80);
-  const tileGap  = max(8 * scaleFactor, 6);
-  const blockGap = max(40 * scaleFactor, 24);
-  const rowGap   = max(30 * scaleFactor, 18);
+  for (let g = 0; g < groups.length; g++) {
 
-  const BUTTON_OFFSET = 18;
-  const fallbackButtonHeight = 40;
+    let x = 40; // left margin for each row
 
-  let realButtonHeight = fallbackButtonHeight;
-  try {
-    if (resetButton?.elt?.offsetHeight) {
-      realButtonHeight = resetButton.elt.offsetHeight;
-    }
-  } catch(e){}
+    for (let s of groups[g]) {
+      const w = s.w;
+      const h = s.h;
 
-  const BIG_GAP = 80; // <— YOUR REQUESTED GAP
+      // If tile would spill past the right side → wrap to new line
+      if (x + w > maxW) {
+        x = 40;
+        y += h + rowGap;
+      }
 
-  let y =
-    buildArea.y +
-    buildArea.h +
-    BUTTON_OFFSET +
-    realButtonHeight +
-    BIG_GAP;
+      // Place tile
+      s.x = x;
+      s.y = y;
 
-  // ⭐ REQUIRED FIX
-  let currentRowWidth = 0;
-
-  for (let gi = 0; gi < groups.length; gi++) {
-    const block = groups[gi];
-    if (!block.length) continue;
-
-    const blockWidth = block.length * baseTileW + (block.length - 1) * tileGap;
-
-    if (currentRowWidth > 0 && currentRowWidth + blockWidth > maxRowWidth) {
-      y += baseTileH + rowGap;
-      currentRowWidth = 0;
+      // Move x for next tile
+      x += w + colGap;
     }
 
-    let blockStartX = leftMargin + currentRowWidth;
-
-    for (let i = 0; i < block.length; i++) {
-      const s = block[i];
-
-      s.w = baseTileW;
-      s.h = baseTileH;
-      s.homeX = blockStartX + i * (baseTileW + tileGap);
-      s.homeY = y;
-
-      s.x = s.homeX;
-      s.y = s.homeY;
-      s.targetX = s.homeX;
-      s.targetY = s.homeY;
-      s.scale = 1;
-      s.targetScale = 1;
-      s.color = s.originalColor;
-      s.inBox = false;
-      s.isBase = true;
-    }
-
-    currentRowWidth += blockWidth + blockGap;
+    // Extra vertical spacing after each category group
+    y += 60;
   }
-
-  shapes = baseShapes.map(b => ({ ...b }));
-  schedulePositionButtons();
 }
-
-// -----------------------------
-// Draw
-// -----------------------------
 function draw() {
   background(backgroundColor);
 
