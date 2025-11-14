@@ -1,3 +1,4 @@
+// sketch.js — fixed full version for GitHub Pages
 let baseShapes = [];   // master unique tiles (objects)
 let shapes = [];       // runtime array (base tiles first, clones appended)
 let groups = [];       // CATEGORY_COUNT groups arrays of baseShapes references
@@ -66,7 +67,9 @@ function setup() {
   // shapes are copies of baseShapes (so runtime clones can be appended)
   shapes = baseShapes.map(b => ({ ...b }));
 
+  // position now and shortly after to allow the DOM to report widths
   positionButtons();
+  setTimeout(positionButtons, 80);
 }
 
 function windowResized() {
@@ -95,10 +98,15 @@ function styleAppButton(btn) {
   btn.style("background", "white");
   btn.style("box-shadow", "0 6px 12px rgba(0,0,0,0.06)");
   btn.style("cursor", "pointer");
+  btn.style("border", "none");
+  // ensure pointer events
+  btn.elt.style.pointerEvents = "auto";
 }
-}
+
 // position three buttons centered under the build area
 function positionButtons() {
+  if (!buildArea) return;
+
   // buildArea coordinates are in canvas pixels
   const areaX = buildArea.x;
   const areaY = buildArea.y;
@@ -106,13 +114,14 @@ function positionButtons() {
   const areaH = buildArea.h;
 
   // get actual DOM widths (fallback values if not yet measured)
-  const wReset  = resetButton && resetButton.elt ? resetButton.elt.offsetWidth : 90;
-  const wCheck  = checkButton && checkButton.elt ? checkButton.elt.offsetWidth : 120;
-  const wDefine = defineButton && defineButton.elt ? defineButton.elt.offsetWidth : 120;
+  const wReset  = resetButton && resetButton.elt ? resetButton.elt.offsetWidth || 90 : 90;
+  const wCheck  = checkButton && checkButton.elt ? checkButton.elt.offsetWidth || 120 : 120;
+  const wDefine = defineButton && defineButton.elt ? defineButton.elt.offsetWidth || 120 : 120;
 
   const gap = 18; // px gap between buttons
   const totalW = wReset + wCheck + wDefine + gap * 2;
 
+  // startX computed relative to page coordinates (canvas at top-left of page)
   const startX = areaX + (areaW - totalW) / 2;
   const y = areaY + areaH + 18;   // 18 px below the white box
 
@@ -535,7 +544,7 @@ function resetShapes() {
 }
 
 // -----------------------------
-// DICTIONARY: Check word and show definition (Free Dictionary API) — Option A: alerts
+// DICTIONARY: Check word and show definition (Free Dictionary API)
 // -----------------------------
 async function checkWord() {
   const word = getCurrentWord().toLowerCase();
@@ -591,7 +600,7 @@ async function showDefinition() {
       return;
     }
 
-    // show via alert (Option A)
+    // show via alert
     alert(`📘 ${word}${part} — ${definition}${example}`);
   } catch (err) {
     alert("Network error while fetching definition. Check your connection.");
