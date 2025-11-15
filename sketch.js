@@ -356,7 +356,7 @@ function layoutGroups() {
   const desiredStartY = buildArea.y + buildArea.h + BUTTON_OFFSET + buttonsH + BIG_GAP;
 
   // cannot overlap build area
-  const minStartY = buildArea.y + buildArea.h + BUTTON_OFFSET + buttonsH + BIG_GAP;
+  const minStartY = buildArea.y + buildArea.h + BUTTON_OFFSET + buttonsH;
 
   // must leave bottom margin visible
   const maxStartY = height - BOTTOM_MARGIN - totalHeight;
