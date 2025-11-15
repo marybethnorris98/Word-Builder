@@ -274,9 +274,10 @@ function layoutGroups() {
 
   const baseTileW = constrain(floor(70 * scaleFactor), 36, 140);
   const baseTileH = constrain(floor(44 * scaleFactor), 24, 80);
+
   const tileGap  = max(8 * scaleFactor, 6);
-  const blockGap = max(40 * scaleFactor, 24);
-  const rowGap   = max(30 * scaleFactor, 18);
+  const rowGap   = max(20 * scaleFactor, 14);
+  const groupGap = max(45 * scaleFactor, 30);
 
   const BUTTON_OFFSET = 18;
   const fallbackButtonHeight = 40;
@@ -288,8 +289,10 @@ function layoutGroups() {
     }
   } catch(e){}
 
-  const BIG_GAP = 80; // <— YOUR REQUESTED GAP
+  // Your requested big gap after the buttons
+  const BIG_GAP = 80;
 
+  // Starting Y position for first row of tiles
   let y =
     buildArea.y +
     buildArea.h +
@@ -297,28 +300,27 @@ function layoutGroups() {
     realButtonHeight +
     BIG_GAP;
 
-  // ⭐ REQUIRED FIX
-  let currentRowWidth = 0;
+  // ---------------------------
+  // CATEGORY-BY-CATEGORY LAYOUT
+  // ---------------------------
 
   for (let gi = 0; gi < groups.length; gi++) {
     const block = groups[gi];
     if (!block.length) continue;
 
-    const blockWidth = block.length * baseTileW + (block.length - 1) * tileGap;
+    let x = leftMargin;
 
-    if (currentRowWidth > 0 && currentRowWidth + blockWidth > maxRowWidth) {
-      y += baseTileH + rowGap;
-      currentRowWidth = 0;
-    }
+    for (let s of block) {
+      // WRAP TO NEW ROW IF TILE DOESN'T FIT
+      if (x + baseTileW > leftMargin + maxRowWidth) {
+        x = leftMargin;
+        y += baseTileH + rowGap;
+      }
 
-    let blockStartX = leftMargin + currentRowWidth;
-
-    for (let i = 0; i < block.length; i++) {
-      const s = block[i];
-
+      // Assign final positions to base shapes
       s.w = baseTileW;
       s.h = baseTileH;
-      s.homeX = blockStartX + i * (baseTileW + tileGap);
+      s.homeX = x;
       s.homeY = y;
 
       s.x = s.homeX;
@@ -330,18 +332,19 @@ function layoutGroups() {
       s.color = s.originalColor;
       s.inBox = false;
       s.isBase = true;
+
+      x += baseTileW + tileGap;
     }
 
-    currentRowWidth += blockWidth + blockGap;
+    // After each category → add vertical gap
+    y += baseTileH + groupGap;
   }
 
+  // Rebuild shapes array
   shapes = baseShapes.map(b => ({ ...b }));
+
   schedulePositionButtons();
 }
-
-// -----------------------------
-// Draw
-// -----------------------------
 function draw() {
   background(backgroundColor);
 
