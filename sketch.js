@@ -286,7 +286,7 @@ function layoutGroups() {
   let buttonsH = 40;
   try { if (resetButton?.elt?.offsetHeight) buttonsH = resetButton.elt.offsetHeight; } catch(e){}
 
-  const BIG_GAP = 80;
+  const BIG_GAP = 60;
   const BOTTOM_MARGIN = 150 * scaleFactor; // desired safe margin from bottom
 
   // --- row plan (your chosen grouping) ---
@@ -349,12 +349,16 @@ function layoutGroups() {
 
   // 3) compute desired startY, but clamp so bottom of layout >= BOTTOM_MARGIN
   let desiredStartY = buildArea.y + buildArea.h + BUTTON_OFFSET + buttonsH + BIG_GAP;
-  const maxAllowedStartY = height - SAFE_MARGIN - totalHeight - BOTTOM_MARGIN;
-  const startY = min(desiredStartY, maxAllowedStartY);
+  
+  // The very lowest Y the layout is allowed to start:
+const lowestStartY = height - BOTTOM_MARGIN - totalHeight;
 
-  // If startY would be very small (overlapping top), ensure it's at least below buildArea
-  const minStartY = buildArea.y + buildArea.h + BUTTON_OFFSET + buttonsH;
-  const finalStartY = max(startY, minStartY);
+// Use desiredStartY unless it would push the layout below the bottom margin
+let finalStartY = min(desiredStartY, lowestStartY);
+
+// Also ensure it never overlaps the build area
+const minStartY = buildArea.y + buildArea.h + BUTTON_OFFSET + buttonsH;
+finalStartY = max(finalStartY, minStartY);
 
   // 4) placement pass: place rows and blocks using finalStartY
   let y = finalStartY;
